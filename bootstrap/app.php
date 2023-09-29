@@ -41,6 +41,15 @@ $app->singleton(
     App\Exceptions\Handler::class
 );
 
+/**
+ * Configure Monolog to allow queue workers to write to newly created daily log files.
+ */
+$app->configureMonologUsing(function (Monolog\Logger $monolog) {
+    $filename = storage_path('logs/'.php_sapi_name().'-'.posix_getpwuid(posix_geteuid())['name'].'.log');
+    $monolog->pushHandler($handler = new Monolog\Handler\RotatingFileHandler($filename, 30));
+    $handler->setFilenameFormat('laravel-{date}-{filename}', 'Y-m-d');
+    $handler->setFormatter(new \Monolog\Formatter\LineFormatter(null, null, true, true));
+});
 /*
 |--------------------------------------------------------------------------
 | Return The Application
